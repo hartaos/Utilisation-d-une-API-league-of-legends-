@@ -1,0 +1,73 @@
+---
+title: "Utilisation de l'API de Riot sur RStudio"
+author: "Gaetan"
+date: "2025-01-03"
+output: 
+  html_document:
+    number_sections: yes  # Pour ajouter des numéros aux titres
+    toc: yes  # Ajout d'une table des matières
+    toc_depth: 5  # Précision de la table des matières
+    folding_code: hide  # Cacher le code par défaut
+    toc_float: true  # Laisser la table des matières constamment visible
+subtitle: "Sous-titre"
+abstract: "Nanani"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+Le but de ce travail est d'apprendre à intérrogé une API avec Rstudio, une fois ce processus compris on peut voir précisement comment utiliser l'api de league of legends et quels données nous permette de récupérer cette API et comment 
+est-il possible de sans servire
+---
+
+# Objectifs
+
+L'objectif de ce projet est de :
+1. Extraire les données des matchs à l'aide de l'API de Riot Games.
+2. Analyser les performances des joueurs.
+3. Visualiser les résultats sous forme de graphiques et de tableaux.
+
+
+
+---
+# Quest-ce qu'une API 
+
+API signifie Application Programming Interface (Interface de Programmation d'Application). C'est un ensemble de règles et de protocoles permettant à différentes applications ou systèmes de communiquer entre eux. En d'autres termes, une API permet à un logiciel d'interagir avec un autre logiciel, souvent via internet.
+
+Par exemple, lorsqu'un site web ou une application mobile utilise des services externes (comme Google Maps, Twitter ou l'API de Riot Games), il envoie une demande (appelée requête) à une API, qui répond avec les données ou services demandés.
+
+## comment s'en servire 
+
+Obtenir une clé API :
+
+La plupart des API nécessitent une clé d'API pour s'authentifier. Tu t'inscris généralement sur le site du service (par exemple, Riot Games, Google Maps, etc.) pour obtenir cette clé.
+
+Faire une requête :
+
+Une fois la clé obtenue, tu peux envoyer une requête HTTP (souvent GET ou POST) à l'API en précisant l'URL de l'API et les paramètres nécessaires. Par exemple, pour obtenir les détails d'un match dans l'API de Riot Games, tu enverras une requête à une URL spécifique qui inclut l'ID du match.
+Recevoir une réponse :
+
+L'API te renvoie une réponse sous forme de données (généralement en JSON ou XML) contenant les informations demandées.
+
+
+---
+
+# Méthodologie
+
+## Récupération des Données
+
+Les données de chaque match sont récupérées via l'API de Riot Games, en utilisant le **PUUID** d'un joueur pour obtenir les matchs récents, puis en extrayant les détails de chaque match.
+
+
+
+### 1. Charger les Librairies
+
+```{r}
+library(httr)
+library(jsonlite)
+library(dplyr)
+library(ggplot2)
+library(knitr)
