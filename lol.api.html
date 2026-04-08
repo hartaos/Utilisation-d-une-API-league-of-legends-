@@ -1740,7 +1740,7 @@ RStudio, dans se projet le but est donc de comprendre ce qu’est une API
 est comment l’utiliser pour ce faire j’ai choisie une API qui commence a
 etre souvent utilisé dans le domaine de la data-analyse de l’esport :
 L’API de riot-games et plus particulièrement du jeux leagues of
-legende.</p>
+legends.</p>
 <p>Riot Games est une société de jeux vidéo ayant créé plusieurs jeux à
 succès. Ils mettent à disposition l’API de leurs jeux en ligne : <a href="https://developer.riotgames.com" class="uri">https://developer.riotgames.com</a> Le choix de comprendre
 comment utiliser l’API de League of Legends est motivé par le fait que
@@ -1760,8 +1760,6 @@ serveur de League of Legends.</p>
 </div>
 <div id="fonctionnement" class="section level2" number="1.2">
 <h2><span class="header-section-number">1.2</span> Fonctionnement</h2>
-<p>Voici la version corrigée, dans la même forme que tu l’as donnée
-:</p>
 <p>Obtenir une clé API : La plupart des API nécessitent une clé d’API
 pour s’authentifier. Il faut généralement s’inscrire sur le site du
 service (par exemple, Riot Games) pour obtenir cette clé.</p>
@@ -1788,7 +1786,6 @@ demandées.</p>
 <div id="mais-quest-ce-que-league-of-legends" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Mais qu’est ce que
 league of legends</h1>
-<p>Voici la version corrigée :</p>
 <p>League of Legends est un jeu où chaque joueur choisit d’incarner un
 champion (parmi un large choix). Le champion choisi prend ainsi place
 sur une carte : “la Faille de l’Invocateur”. Sur cette carte, vous et
@@ -1845,7 +1842,6 @@ données</h1>
 <div id="chargement-des-librairies" class="section level3" number="3.0.1">
 <h3><span class="header-section-number">3.0.1</span> Chargement des
 librairies</h3>
-<p>Voici la version corrigée :</p>
 <p>Il est nécessaire d’utiliser plusieurs packages pour “communiquer”
 avec l’API. Tout d’abord, le package httr permet de faire des requêtes
 sur le web, c’est-à-dire des requêtes en HTTP. Ensuite, le package
@@ -1856,10 +1852,12 @@ options(repos = c(CRAN = &quot;https://cran.rstudio.com/&quot;))
 install.packages(&quot;httr&quot;)</code></pre>
 <pre><code>## Installation du package dans &#39;C:/Users/gaeta/AppData/Local/R/win-library/4.3&#39;
 ## (car &#39;lib&#39; n&#39;est pas spécifié)</code></pre>
-<pre><code>## le package &#39;httr&#39; a été décompressé et les sommes MD5 ont été vérifiées avec succés
-## 
-## Les packages binaires téléchargés sont dans
-##  C:\Users\gaeta\AppData\Local\Temp\RtmpGgBsqn\downloaded_packages</code></pre>
+<pre><code>## 
+##   Une version binaire est disponible mais la version du source est plus
+##   récente:
+##      binary source needs_compilation
+## httr  1.4.7  1.4.8             FALSE</code></pre>
+<pre><code>## installation du package source &#39;httr&#39;</code></pre>
 <pre class="r"><code># nécéssaire pour se connecter a une API 
 install.packages(&quot;jsonlite&quot;)</code></pre>
 <pre><code>## Installation du package dans &#39;C:/Users/gaeta/AppData/Local/R/win-library/4.3&#39;
@@ -1867,7 +1865,7 @@ install.packages(&quot;jsonlite&quot;)</code></pre>
 <pre><code>## le package &#39;jsonlite&#39; a été décompressé et les sommes MD5 ont été vérifiées avec succés
 ## 
 ## Les packages binaires téléchargés sont dans
-##  C:\Users\gaeta\AppData\Local\Temp\RtmpGgBsqn\downloaded_packages</code></pre>
+##  C:\Users\gaeta\AppData\Local\Temp\Rtmp2jgTFn\downloaded_packages</code></pre>
 <pre class="r"><code># permet de lire et traiter les donnée recus en json(envoyé par l&#39;api) et peux les transformer en tableaux ou liste R 
 library(httr)
 library(jsonlite)</code></pre>
@@ -1878,7 +1876,7 @@ puuid</h3>
 <p>Il s’agit ensuite d’utiliser la clé d’API fournie par le site. Je
 mets la clé dans un objet pour ensuite appeler l’objet dans lequel la
 clé est définie.</p>
-<pre class="r"><code>api_key &lt;- &quot;RGAPI-8f602398-6ea1-42a0-bf08-73564e1f5d39&quot;
+<pre class="r"><code>api_key &lt;- &quot;RGAPI-524367dd-da41-4224-98de-5364285b1cd3&quot;
 # la clé d&#39;api est rentré dans un objet </code></pre>
 <p>J’utilise la même méthode que pour la clé d’API : je rentre le
 pseudonyme et la tagline dans un objet.</p>
@@ -1903,6 +1901,7 @@ Riot pour identifier l’utilisateur. On peut à cette étape vérifier que
 la requete a fonctionner : si le statut de la requete est 200 cela
 indique que la requete a focntionner</p>
 <pre class="r"><code>data &lt;- fromJSON(content(response_riot_id, &quot;text&quot;))</code></pre>
+<pre><code>## No encoding supplied: defaulting to UTF-8.</code></pre>
 <p>Dans cette étape, on transforme la réponse que l’on a obtenue, qui
 est sous le format JSON, en texte pour pouvoir lire la réponse obtenue
 et comprendre les informations qu’elle contient.</p>
@@ -1929,10 +1928,11 @@ seulement l’endpoint qui change.</p>
 response_match &lt;- GET(url_match, add_headers(&quot;X-Riot-Token&quot; = api_key))</code></pre>
 <p>ici aussi on peut vérifier si la requete est bonne avec</p>
 <pre class="r"><code>match_id &lt;- fromJSON(content(response_match,&quot;text&quot;))</code></pre>
+<pre><code>## No encoding supplied: defaulting to UTF-8.</code></pre>
 <pre class="r"><code>print(match_id)</code></pre>
-<pre><code>##  [1] &quot;EUW1_7288473408&quot; &quot;EUW1_7287478543&quot; &quot;EUW1_7287398968&quot; &quot;EUW1_7287368529&quot;
-##  [5] &quot;EUW1_7286212844&quot; &quot;EUW1_7286173313&quot; &quot;EUW1_7286097306&quot; &quot;EUW1_7283122438&quot;
-##  [9] &quot;EUW1_7283019116&quot; &quot;EUW1_7282842636&quot;</code></pre>
+<pre><code>##  [1] &quot;EUW1_7813683379&quot; &quot;EUW1_7813632282&quot; &quot;EUW1_7813578438&quot; &quot;EUW1_7813549136&quot;
+##  [5] &quot;EUW1_7813055535&quot; &quot;EUW1_7813020010&quot; &quot;EUW1_7807351444&quot; &quot;EUW1_7807333940&quot;
+##  [9] &quot;EUW1_7806835236&quot; &quot;EUW1_7806554334&quot;</code></pre>
 <p>Différents IDs de game s’affichent. Ce sont les identifiants de
 partie. Chaque partie est définie par une suite de chiffres et de
 lettres qui permet de différencier les parties entre elles.</p>
@@ -1950,6 +1950,7 @@ url_match_details &lt;- paste0(&quot;https://europe.api.riotgames.com/lol/match/
 <pre class="r"><code># Envoyer la requête GET avec la clé API dans les en-têtes
 response_match_details &lt;- GET(url_match_details, add_headers(&quot;X-Riot-Token&quot; = api_key))</code></pre>
 <pre class="r"><code>match_details &lt;- fromJSON(content(response_match_details,&quot;text&quot;))</code></pre>
+<pre><code>## No encoding supplied: defaulting to UTF-8.</code></pre>
 <p>Il est nécéssaire ici de comprendre la structure des données obtenue
 dans pour ce faire il faut parcourir les données</p>
 <pre class="r"><code>str(head(match_details, n = 2))</code></pre>
@@ -3752,8 +3753,7 @@ l’interrogation d’API, comparé à des langages comme Python. À travers
 les différentes étapes décrites en amont, nous avons vu que la mécanique
 pour communiquer avec l’API est plutôt simple une fois que la logique
 est comprise. Le point le plus important étant de lire la documentation
-mise à disposition, et cela pour toutes les API. Enfin, commencer à
-utiliser l’API fait aussi partie du processus. :)</p>
+mise à disposition, et cela pour toutes les API</p>
 </div>
 
 

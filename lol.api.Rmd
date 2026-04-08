@@ -102,7 +102,7 @@ library(jsonlite)
 Il s'agit ensuite d'utiliser la clé d'API fournie par le site. Je mets la clé dans un objet pour ensuite appeler l'objet dans lequel la clé est définie.
 
 ```{r}
-api_key <- "RGAPI-8f602398-6ea1-42a0-bf08-73564e1f5d39"
+api_key <- "RGAPI-524367dd-da41-4224-98de-5364285b1cd3"
 # la clé d'api est rentré dans un objet 
 ```
 
@@ -384,6 +384,7 @@ On voit les items utilisés par les joueurs lors de la game
 On peut, en dernier exemple, montrer un tableau plus large de la gamme en faisant comme pour le précédent, mais cette fois en incluant tous les joueurs de la game.
 
 ```{r}
+
 all_player_game1 <- data.frame(
   Name = participants$championName,  # Nom du champion joué
   role = participants$individualPosition,          # Position jouée (MID, TOP, etc.)
