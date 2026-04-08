@@ -1,0 +1,451 @@
+---
+title: "Utilisation de l'API de Riot sur RStudio"
+author: "Gaetan"
+date: "2025-01-03"
+output: 
+  html_document:
+    number_sections: yes  # Pour ajouter des numéros aux titres
+    toc: yes  # Ajout d'une table des matières
+    toc_depth: 5  # Précision de la table des matières
+    folding_code: hide  # Cacher le code par défaut
+    toc_float: true  # Laisser la table des matières constamment visible
+subtitle: "Analyse des données de League of Legends"
+abstract: "Ce document explore l'utilisation de l'API de Riot Games pour extraire et analyser les données des matchs de League of Legends en utilisant RStudio."
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+![Faker: 5 fois chamions du monde de league of legends](https://th.bing.com/th/id/OIP.QBUKloRXQXLniHAai5yEeQHaE8?rs=1&pid=ImgDetMain)
+
+# Introduction
+
+Le but de ce travail est d'apprendre à interroger une API avec RStudio,
+dans se projet le but est donc de comprendre ce qu'est une API est
+comment l'utiliser pour ce faire j'ai choisie une API qui commence a
+etre souvent utilisé dans le domaine de la data-analyse de l'esport :
+L'API de riot-games et plus particulièrement du jeux leagues of legends.
+
+Riot Games est une société de jeux vidéo ayant créé plusieurs jeux à succès. Ils mettent à disposition l'API de leurs jeux en ligne : <https://developer.riotgames.com> Le choix de comprendre comment utiliser l'API de League of Legends est motivé par le fait que presque exclusivement tous les guides pour utiliser cette API sont réalisés avec le langage Python. Je souhaite donc montrer qu'en R, il est aussi possible de faire les mêmes choses.
+
+
+## Qu'est-ce qu'une API ?
+
+API signifie Application Programming Interface (Interface de Programmation d'Application). C'est un ensemble de règles et de protocoles permettant à différentes applications ou systèmes de communiquer entre eux. En d'autres termes, une API permet à un logiciel d'interagir avec un autre logiciel, souvent via Internet. On va donc, à travers notre ordinateur, demander un certain nombre d'informations au serveur de League of Legends.
+
+## Fonctionnement
+
+Obtenir une clé API : La plupart des API nécessitent une clé d'API pour s'authentifier. Il faut généralement s'inscrire sur le site du service (par exemple, Riot Games) pour obtenir cette clé.
+
+Faire une requête : Une fois la clé obtenue, il est possible d'envoyer une requête HTTP (souvent GET ou POST) à l'API en précisant l'URL et les paramètres nécessaires.
+
+Recevoir une réponse : L'API renvoie une réponse sous forme de données (généralement en JSON ou XML) contenant les informations demandées.
+
+Comment s'en servir ?
+
+1.Obtenir une clé API : La plupart des API nécessitent une clé d'API pour s'authentifier. Tu t'inscris généralement sur le site du service (par exemple, Riot Games, Google Maps, etc.) pour obtenir cette clé.
+
+2.Faire une requête : Une fois la clé obtenue, tu peux envoyer une requête HTTP (souvent GET ou POST) à l'API en précisant l'URL de l'API et les paramètres nécessaires. Par exemple, pour obtenir les détails d'un match dans l'API de Riot Games, tu enverras une requête à une URL spécifique qui inclut l'ID du match.
+
+3.Recevoir une réponse : L'API te renvoie une réponse sous forme de données (généralement en JSON ou XML) contenant les informations demandées.
+
+# Mais qu'est ce que league of legends
+
+
+League of Legends est un jeu où chaque joueur choisit d'incarner un champion (parmi un large choix). Le champion choisi prend ainsi place sur une carte : "la Faille de l'Invocateur". Sur cette carte, vous et votre équipe (5 joueurs avec vous) affrontez une autre équipe. Il y a donc un côté "rouge" (plus à gauche) et un côté "bleu" (plus à droite). La carte est divisée en trois lignes (lanes) : la ligne du haut (Top Lane), la ligne du milieu (Mid Lane), la ligne du bas (Bot Lane), ainsi qu’une zone centrale appelée la jungle. Le but du jeu est de détruire la base adverse en premier. Le jeu est assez complexe et il est donc difficile de le résumer tant il y a de choses à expliquer, mais plusieurs très bons résumés sont disponibles en ligne.
+
+
+<https://www.youtube.com/watch?v=SwlBTktgMM4>
+
+## comment utiliser son API
+
+Pour utiliser n'importe quelle API, il est nécessaire de lire la documentation liée à l'API, sinon il est impossible de comprendre comment lui parler. La documentation joue un rôle de dictionnaire, avec toutes les phrases disponibles que l'on peut utiliser pour interroger l'API, ainsi que les effets recherchés pour chacune des phrases disponibles.
+
+Comme précisé précédemment, il est souvent demandé à l'utilisateur de l'API une clé pour éviter tout abus de la part de ce dernier, et l'API de Riot n'en est pas exemptée. Il faut donc créer un compte si vous n'en possédez pas. Ceci dit, si vous jouez à l'un des différents jeux de Riot, vous avez déjà un compte. Ensuite, il faut demander une clé dans l'onglet "Dashboard" de votre compte et cliquer sur "Générer une clé". Il existe plusieurs niveaux de clés d'API qui confèrent différentes "autorisations". Dans notre cas, nous allons utiliser une clé basique qui permet d'interroger l'API, mais avec plusieurs limites : tout d'abord, il faut la régénérer toutes les 48h et son nombre de requêtes est limité à 20 requêtes par seconde et 100 toutes les 2 minutes. Dans notre cas, cela ne pose pas de problème, mais si vous souhaitez récupérer plus de données, vous pouvez faire une demande sur le site pour obtenir une clé de développement qui ne vous limitera plus en requêtes.
+
+## Méthodologie
+
+Aprés avoir lu la documentation <https://developer.riotgames.com/apis>
+nous voyons que si nous voulons récupérer des données de partie il faut
+deja choisir un joueur précisement pour récupérer son puuid qui
+fonctionne comme un indentifiant. Dans notre exemple nous allons choisir
+le joueur "Danny vitesse" il faut donc récupérer sont puuid en utilisant
+son pseudos donc "Danny vitesse" et sa "tagline", si par exemple vous
+n'avez que le pseudos d'un joueurs(vos amis dans le jeu par exemple)
+vous pouvez utiliser des site comme <https://www.op.gg/> pour obtenir la
+tagline qui correspond au \# a cotés du pseudos
+
+# Récupération des données
+
+### Chargement des librairies
+
+Il est nécessaire d'utiliser plusieurs packages pour "communiquer" avec l'API. Tout d'abord, le package httr permet de faire des requêtes sur le web, c'est-à-dire des requêtes en HTTP. Ensuite, le package jsonlite permet de récupérer les données fournies par l'API en JSON
+
+```{r, library,warning = FALSE}
+# Définir un miroir CRAN
+options(repos = c(CRAN = "https://cran.rstudio.com/"))
+# expliquer pourquoi cette ligne est importante 
+install.packages("httr")
+# nécéssaire pour se connecter a une API 
+install.packages("jsonlite")
+# permet de lire et traiter les donnée recus en json(envoyé par l'api) et peux les transformer en tableaux ou liste R 
+library(httr)
+library(jsonlite)
+```
+
+### Récupération du puuid
+
+Il s'agit ensuite d'utiliser la clé d'API fournie par le site. Je mets la clé dans un objet pour ensuite appeler l'objet dans lequel la clé est définie.
+
+```{r}
+api_key <- "RGAPI-8f602398-6ea1-42a0-bf08-73564e1f5d39"
+# la clé d'api est rentré dans un objet 
+```
+
+
+J'utilise la même méthode que pour la clé d'API : je rentre le pseudonyme et la tagline dans un objet.
+
+```{r}
+# Riot ID (gameName et tagLine)
+game_name <-URLencode("Danny vitesse") #pour les espaces 
+tag_line <- "EUW"
+```
+
+Ici, c'est la première fois que je vais communiquer avec l'API. J'utilise l'URL fournie dans la documentation pour obtenir le PUUID, mais en rajoutant l'objet game_name et tagline que j'ai créés plus haut. Ici, paste0 sert à assembler l'URL avec les objets
+
+```{r}
+# Construire l'URL pour obtenir le PUUID
+url_riot_id <- paste0("https://europe.api.riotgames.com/riot/account/v1/accounts/by-riot-id/", game_name, "/", tag_line)
+```
+
+Après avoir obtenu cette URL, il s'agit de l'appeler une nouvelle fois, mais en ajoutant notre clé.
+
+```{r}
+response_riot_id <- GET(url_riot_id, add_headers("X-Riot-Token" = api_key))
+```
+Ici on utilise la fonction GET du package httr qui envoie une requête HTTP GET pour interroger l'API en utilise url_riot_id(l'url que l'on a définie en amont) add_headers() joue ici un role similaire a la fonction paste0,elle ajoute des en-têtes HTTP à la requête, comme la clé d'API obligatoire pour l'authentification. X-Riot-Token : En-tête requis par Riot pour identifier l'utilisateur.
+On peut à cette étape vérifier que la requete a fonctionner :
+`r print(response_riot_id)` si le statut de la requete est 200 cela indique que la requete a focntionner
+
+
+```{r}
+data <- fromJSON(content(response_riot_id, "text"))
+```
+Dans cette étape, on transforme la réponse que l'on a obtenue, qui est sous le format JSON, en texte pour pouvoir lire la réponse obtenue et comprendre les informations qu'elle contient.
+
+On peut ensuite demander d'afficher les données obtenues avec un simple.
+
+Nous avons donc obtenu le PUUID. Ce PUUID peut ensuite nous permettre de récupérer plusieurs informations. Dans cet exemple, nous allons l'utiliser pour récupérer les identifiants des matchs réalisés par le joueur.
+
+Même mécanique que précédemment : on rentre le PUUID du joueur dans un objet.
+```{r}
+puuid <- "3E646e-yd_mpUi2_D32Hwq9HpheDjQFPSV3RJiYXig0O4DLd4VGxapGlDsEdS-g6HLbjbGcprJelyg"
+# on enregistre le puuid dans un objet 
+```
+
+### Récupération des ID des games
+
+Ici, on utilise un autre "endpoint" (structure d'URL) fourni par la documentation de Riot Games en utilisant les PUUID.
+
+La mécanique de requête de l'API est similaire ; c'est souvent seulement l'endpoint qui change.
+
+```{r}
+url_match <- paste0("https://europe.api.riotgames.com/lol/match/v5/matches/by-puuid/", puuid, "/ids?start=0&count=10")
+```
+
+```{r}
+# Envoyer la requête GET avec la clé API dans les en-têtes
+response_match <- GET(url_match, add_headers("X-Riot-Token" = api_key))
+```
+
+ici aussi on peut vérifier si la requete est bonne
+avec`r print(response_match)`
+
+```{r}
+match_id <- fromJSON(content(response_match,"text"))
+```
+
+```{r}
+print(match_id)
+```
+
+Différents IDs de game s'affichent. Ce sont les identifiants de partie. Chaque partie est définie par une suite de chiffres et de lettres qui permet de différencier les parties entre elles.
+
+Il s'agit maintenant de "rentrer" dans une partie précise pour récupérer les données présentes dans celle-ci.
+
+### Récupération des données d'un match
+
+On choisit un ID de games et on le transforme en objet
+
+```{r}
+match_id <- "EUW1_7223750407"
+```
+
+Utilisation d'un nouveaux endpoint
+
+```{r}
+# Construire l'URL pour récupérer les détails du match
+url_match_details <- paste0("https://europe.api.riotgames.com/lol/match/v5/matches/", match_id)
+```
+
+```{r}
+# Envoyer la requête GET avec la clé API dans les en-têtes
+response_match_details <- GET(url_match_details, add_headers("X-Riot-Token" = api_key))
+```
+
+```{r}
+match_details <- fromJSON(content(response_match_details,"text"))
+```
+
+Il est nécéssaire ici de comprendre la structure des données obtenue
+dans `r print(head(match_details, n = 5))` pour ce faire il faut parcourir les données
+
+```{r}
+str(head(match_details, n = 2))
+```
+
+Ici, on voit la structure des données pour essayer de les comprendre. On ne demande d'afficher que les 2 premières lignes, mais visiblement, il semble y avoir plusieurs données imbriquées, avec plusieurs types de données. En bref, les données que l'on peut récupérer dans une partie de League of Legends à l'aide de l'API semblent complexes.
+
+# Visualisation
+
+On peut, pour mieux comprendre comment utiliser ces données et continuer à utiliser l'API plus en détail, créer les premières visualisations.
+
+On peut, par exemple, créer un résumé des "kills" (ennemis tués), des morts et des assistances.
+
+Ici, on crée une boucle pour vérifier si les détails du match ont été récupérés.
+
+```{r}
+print(head(match_details$info, n = 9))
+```
+Ici, on remarque que les principales données de la partie sont visibles dans la variable infos, et dans la "sous-branche" participants. On peut donc créer une table de données plus simple à comprendre que match_details en isolant les variables nécessaires pour nos visualisations.
+
+```{r}
+# Accéder au tableau participants
+participants <- match_details$info$participants
+```
+On peut, par exemple, créer une première boucle qui isole des données essentielles, comme le nombre de morts dans la partie selon les joueurs.
+
+```{r}
+# Parcourir chaque ligne du data frame
+# Vérifier si les participants existent
+if (exists("match_details") && !is.null(match_details$info$participants)) {
+  # Accéder au tableau participants
+  participants <- match_details$info$participants
+  
+  # Parcourir chaque ligne du data frame
+  for (i in 1:nrow(participants)) {
+    print(paste("Player:", participants$summonerName[i]))  # Nom du joueur
+    print(paste("Kills:", participants$kills[i]))          # Kills
+    print(paste("Deaths:", participants$deaths[i]))        # Deaths
+    print(paste("Assists:", participants$assists[i]))      # Assists
+    print("--------")                                     # séparation
+  }
+} else {
+  print("Aucun participant trouvé dans ce match.")
+}
+```
+On peut maintenant essayer de créer une visualisation plus parlante pour résumer les actions de la partie. Je souhaite ici toujours résumer la partie d'un seul joueur : "Danny Vitesse".
+
+# Premier tableau
+
+On peut maintenant essayer de créer une visualisation plus pertinente pour résumer si le joueur a effectué une bonne partie ou non.
+
+Encore une fois, la compréhension du data frame participants (que l'on a créé en amont) est primordiale pour savoir quelle variable utiliser, s'il faut faire du recodage ou encore changer la structure.
+
+
+Ici, le problème d'imbriquement de différentes données.
+
+Ici, on affiche seulement les pseudos des joueurs dans la partie.
+
+```{r}
+print(participants$summonerName)
+```
+
+On crée une nouvelle table avec les données uniquement pour un joueur, à savoir : Danny Vitesse.
+
+```{r}
+player <- participants[trimws(participants$summonerName) == "Danny vitesse", ]
+```
+
+
+On crée un nouveau data frame avec, encore une fois, uniquement les données que l'on souhaite résumer.
+
+
+```{r}
+Danny_vit <- data.frame(
+  Name = if (!is.null(player$championName)) player$championName else NA,
+  kills = if (!is.null(player$kills)) player$kills else NA,
+  deaths = if (!is.null(player$deaths)) player$deaths else NA,
+  assists = if (!is.null(player$assists)) player$assists else NA,
+  visionScore = if (!is.null(player$visionScore)) player$visionScore else NA,
+  goldEarned = if (!is.null(player$goldEarned)) player$goldEarned else NA,
+  goldSpent = if (!is.null(player$goldSpent)) player$goldSpent else NA,
+  damageDealtToChampions = if (!is.null(player$totalDamageDealtToChampions)) player$totalDamageDealtToChampions else NA,
+  damageDealtToObjectives = if (!is.null(player$damageDealtToObjectives)) player$damageDealtToObjectives else NA,
+  damageDealtToTurrets = if (!is.null(player$damageDealtToTurrets)) player$damageDealtToTurrets else NA,
+  wardsPlaced = if (!is.null(player$wardsPlaced)) player$wardsPlaced else NA,
+  wardsKilled = if (!is.null(player$wardsKilled)) player$wardsKilled else NA,
+  items = if (!is.null(player$item0)) paste(na.omit(c(player$item0, player$item1, player$item2, player$item3, player$item4, player$item5)), collapse = ", ") else NA
+)
+```
+
+
+Je décide d'utiliser le package "kableExtra" pour obtenir un tableau plus esthétique et surtout interactif.
+
+```{r}
+library(kableExtra)
+```
+
+```{r}
+# Générer un tableau HTML stylisé
+Danny_vit %>%
+  kbl( # Créer le tableau de base
+    caption = "Statistiques du Joueur - Danny vitesse",
+    format = "html" # Format HTML
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#4CAF50") %>% # En-tête colorée
+  column_spec(1, bold = TRUE) %>% # Nom du champion en gras
+  scroll_box(width = "100%", height = "400px") # Barre de défilement si nécessaire
+```
+
+Je crée mon tableau à partir du jeu de données sobrement intitulé "Danny_vit", en ajoutant des options comme, par exemple, une barre de navigation.
+
+À la suite de la visualisation de ce tableau, on voit premièrement qu'il ne vaut mieux pas être dans une des parties de Danny Vitesse au vu de son piètre niveau (8 morts pour 0 kills), mais surtout que les noms des objets que le joueur a achetés au cours de la partie sont remplacés par des suites de chiffres. Il s'agit en fait, comme pour les parties d'ID, des différents "items" (objets) présents dans le jeu, qui sont définis par une suite de chiffres. La solution est donc d'associer les différents ID au nom qui leur est associé dans le jeu.
+
+Pour mettre en place cette solution, il faut là aussi fouiller dans la documentation pour trouver ce dont on a besoin. Dans la documentation, une partie est appelée "data-dragons". Il s'agit d'un système de ressources statiques mis à disposition par Riot Games pour les développeurs utilisant l'API de League of Legends. Il contient des données statiques et des assets du jeu, tels que les informations sur les champions, les objets, les sorts, les runes, et bien d'autres éléments essentiels. Ces données ne changent pas en fonction des matchs ou des mises à jour en temps réel, contrairement aux données dynamiques fournies par l'API principale.
+
+Nous allons donc récupérer toutes les données sur les items pour ensuite les lier aux items présents dans la game.
+
+Pour faire une requête, c'est la même chose, mais plus besoin de la clé API.
+
+L'endpoint est là aussi disponible dans la documentation.
+
+```{r}
+url_items <- "https://ddragon.leagueoflegends.com/cdn/14.1.1/data/en_US/item.json"
+```
+
+```{r}
+items_data <- fromJSON(url_items)
+```
+Il est possible que les données ne soient pas proprement statiques. En effet, si une mise à jour modifie des items, il est possible qu'il faille recharger les données sur les items.
+
+```{r}
+#Vérifier la structure
+str(items_data$data[1:3])  # Exemple sur les 3 premiers objets
+```
+
+```{r}
+item_dict <- sapply(items_data$data, function(x) x$name)
+```
+
+
+```{r}
+print(head(item_dict, 10))  # Afficher les 10 premiers objets
+```
+
+Ici, on extrait les noms des objets de jeu à partir de la liste items_data$data. On crée un dictionnaire où les clés sont les identifiants des objets (par ex. 1001), et les valeurs sont leurs noms (par ex. "Boots"). Ce dictionnaire permet de convertir rapidement les identifiants en noms.
+
+```{r}
+# Remplacer les IDs par leurs noms dans la colonne item0
+participants$item0_name <- item_dict[as.character(participants$item0)]
+participants$item1_name <- item_dict[as.character(participants$item1)]
+participants$item2_name <- item_dict[as.character(participants$item2)]
+participants$item3_name <- item_dict[as.character(participants$item3)]
+participants$item4_name <- item_dict[as.character(participants$item4)]
+participants$item5_name <- item_dict[as.character(participants$item5)]
+```
+
+```{r}
+# Créer un tableau récapitulatif avec les objets par joueur
+item_summary <- data.frame(
+  Name = participants$championName,
+  Item0 = participants$item0_name,
+  Item1 = participants$item1_name,
+  Item2 = participants$item2_name,
+  Item3 = participants$item3_name,
+  Item4 = participants$item4_name,
+  Item5 = participants$item5_name
+)
+```
+
+```{r}
+print(item_summary)
+```
+
+On voit les items utilisés par les joueurs lors de la game
+
+# Dernière visualisation
+
+On peut, en dernier exemple, montrer un tableau plus large de la gamme en faisant comme pour le précédent, mais cette fois en incluant tous les joueurs de la game.
+
+```{r}
+all_player_game1 <- data.frame(
+  Name = participants$championName,  # Nom du champion joué
+  role = participants$individualPosition,          # Position jouée (MID, TOP, etc.)
+  kills = participants$kills,        # Nombre de kills
+  deaths = participants$deaths,      # Nombre de morts
+  assists = participants$assists,    # Nombre d'assistances
+  team = participants$teamId <- factor(participants$teamId, 
+                                       levels = c(100, 200), 
+                                       labels = c("Blue", "Red")),
+  # Informations sur les objectifs et combats
+  visionScore = participants$visionScore,              # Score vision total
+  goldEarned = participants$goldEarned,                # Golds gagnés
+  goldSpent = participants$goldSpent,                  # Golds dépensés
+  damageDealtToChampions = participants$totalDamageDealtToChampions, # Dégâts infligés
+  damageDealtToObjectives = participants$damageDealtToObjectives,    # Dégâts sur objectifs
+  damageDealtToTurrets = participants$damageDealtToTurrets,          # Dégâts sur tourelles
+  wardsPlaced = participants$wardsPlaced,             # Wards placées
+  wardsKilled = participants$wardsKilled,          # Wards détruites
+  Nashor = participants$baronKills,              #qui a tué le nashor
+  
+  # Variables supplémentaires
+  firstBloodAssist = participants$firstBloodAssist,   # Assistance sur le First Blood
+  firstBloodKill = participants$firstBloodKill,       # A réalisé le First Blood
+  firstTowerAssist = participants$firstTowerAssist,   # Assistance sur la première tourelle
+  firstTowerKill = participants$firstTowerKill,       # A détruit la première tourelle
+  doubleKills = participants$doubleKills,             # Nombre de doubles kills
+  dragonKills = participants$dragonKills,             # Nombre de dragons tués
+  killParticipation = participants$challenges$killParticipation, # Participation aux kills (%)
+  bountyGold = participants$challenges$bountyGold,    # Gold obtenu pour prime
+  buffsStolen = participants$challenges$buffsStolen,  # Buffs volés
+  
+  # Liste des items achetés
+  items = sapply(1:nrow(participants), function(i) {
+    paste(na.omit(c(
+      item_dict[as.character(participants$item0[i])],
+      item_dict[as.character(participants$item1[i])],
+      item_dict[as.character(participants$item2[i])],
+      item_dict[as.character(participants$item3[i])],
+      item_dict[as.character(participants$item4[i])],
+      item_dict[as.character(participants$item5[i])]
+    )), collapse = ", ")
+  }))
+```
+
+```{r}
+# Ou pour les supprimer
+participants <- na.omit(participants)
+```
+
+```{r}
+all_player_game1 %>%
+  kbl( # Créer le tableau de base
+    caption = "Statistiques des joueur de la partie",
+    format = "html" # Format HTML
+  ) %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive")) %>%
+  row_spec(0, bold = TRUE, color = "white", background = "#4CAF50") %>% # En-tête colorée
+  column_spec(1, bold = TRUE) %>% # Nom du champion en gras
+  scroll_box(width = "100%", height = "400px") # Barre de défilement si nécessaire
+
+```
+
+# Conclusion
+
+Le but de cette présentation était de montrer comment utiliser l'API de Riot Games avec le langage R, un langage qui peut être utilisé pour l'interrogation d'API, comparé à des langages comme Python. À travers les différentes étapes décrites en amont, nous avons vu que la mécanique pour communiquer avec l'API est plutôt simple une fois que la logique est comprise. Le point le plus important étant de lire la documentation mise à disposition, et cela pour toutes les API
